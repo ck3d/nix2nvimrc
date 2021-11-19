@@ -99,7 +99,7 @@ let
       };
       on_attach = mkOption {
         type = types.either types.attrs types.path;
-        default = luaExpr "function() end";
+        default = luaExpr "function(client, bufnr) end";
       };
     };
   };
