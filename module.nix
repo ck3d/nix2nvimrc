@@ -132,7 +132,7 @@ in
       internal = true;
       type = types.attrsOf types.anything;
     };
-    setup = mkOption {
+    config = mkOption {
       internal = true;
       type = types.attrsOf types.anything;
     };
@@ -176,6 +176,6 @@ in
       };
     opt = foldl' (a: b: a // b.opts) { } config.configs;
     var = foldl' (a: b: a // b.vars) { } config.configs;
-    setup = foldl' (a: b: a // { ${b.name} = b.setup; }) config.configs;
+    config = foldl' (a: b: a // { ${b.name} = b; }) { } config.configs;
   };
 }

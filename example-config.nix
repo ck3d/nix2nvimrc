@@ -1,10 +1,9 @@
-{ pkgs, lib, ... }:
+{ pkgs, config, lib, ... }:
 {
   configs = [
     {
-      name = "nix";
+      name = "lang-nix";
       treesitter.languages = [ "nix" ];
-      lspconfig.servers.rnix.pkg = pkgs.rnix-lsp;
     }
     {
       name = "telescope";
@@ -13,6 +12,12 @@
       keymaps = map (lib.toKeymap { noremap = true; silent = true; }) [
         [ "n" "<space>ff" "<Cmd>Telescope find_files<CR>" { } ]
       ];
+    }
+    {
+      name = "lsp";
+      lspconfig.servers = lib.optionalAttrs
+        (config.config ? "lang-nix")
+        { rnix.pkg = pkgs.rnix-lsp; };
     }
   ];
 }
