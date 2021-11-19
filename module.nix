@@ -19,9 +19,9 @@ let
       description = "Lua expressions to execute";
     };
     vim = mkOption {
-      type = types.listOf types.str;
+      type = with types; listOf (either str path);
       default = [ ];
-      description = "Vim expressions to execute";
+      description = "Vim expressions or files to execute";
     };
   };
 
@@ -141,6 +141,7 @@ in
   config = {
     out =
       let
+        vim2str = vim: if builtins.isPath vim then "source ${vim}" else vim;
         lspconfigWrapper = "lspconfigWrapper";
 
         lspUsed = any (c: c.lspconfig != null) config.configs;
@@ -151,7 +152,7 @@ in
           ++ (map (m: toLuaFn "vim.api.nvim_set_keymap" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
           ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (attrNames c.opts))
           ++ c.lua
-          ++ (map (v: toLuaFn "vim.cmd" [ v ]) c.vim)
+          ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
           ++ (optional (c.setup != null)
             (toLuaFn (if c.setupFn != null then c.setupFn else "require'${c.name}'.setup") [ c.setup ]))
           ++ (map
@@ -168,7 +169,7 @@ in
       in
       pkgs.vimUtils.vimrcContent {
         customRC = "source ${pkgs.writeText "init.lua" (concatStringsSep "\n" init_lua)}";
-        beforePlugins = concatStringsSep "\n" config.beforePlugins.vim;
+        beforePlugins = concatStringsSep "\n" (map vim2str config.beforePlugins.vim);
         packages.nix-nvimconfig.start = foldl'
           (a: b: a ++ b.plugins)
           (optional lspUsed config.lspconfig)

@@ -18,6 +18,7 @@
       lspconfig.servers = lib.optionalAttrs
         (config.config ? "lang-nix")
         { rnix.pkg = pkgs.rnix-lsp; };
+      vim = [ ./test/init.vim ];
     }
   ];
 }
