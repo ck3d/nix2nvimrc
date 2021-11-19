@@ -28,10 +28,10 @@ let
   configType = types.submodule {
     options = ({
       name = mkOption { type = types.str; };
-      setupFn = mkOption {
+      modulePath = mkOption {
         type = types.nullOr types.str;
         default = null;
-        description = "Argument passed to setup";
+        description = "Module path used to call setup";
       };
       setup = mkOption {
         type = types.anything;
@@ -154,7 +154,7 @@ in
           ++ c.lua
           ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
           ++ (optional (c.setup != null)
-            (toLuaFn (if c.setupFn != null then c.setupFn else "require'${c.name}'.setup") [ c.setup ]))
+            (toLuaFn "require'${if c.modulePath != null then c.modulePath else c.name}'.setup" [ c.setup ]))
           ++ (map
             (l: toLuaFn "vim.treesitter.require_language" [ "${l}" "${config.treesitter.grammars."tree-sitter-${l}"}/parser" ])
             c.treesitter.languages)

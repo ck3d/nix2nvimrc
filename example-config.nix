@@ -6,6 +6,12 @@
       treesitter.languages = [ "nix" ];
     }
     {
+      name = "treesitter";
+      plugins = [ pkgs.vimPlugins.nvim-treesitter ];
+      modulePath = "nvim-treesitter.configs";
+      setup.highlight.enable = true;
+    }
+    {
       name = "telescope";
       plugins = with pkgs.vimPlugins; [ telescope-nvim plenary-nvim popup-nvim ];
       setup = { };
