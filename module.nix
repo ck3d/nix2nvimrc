@@ -28,6 +28,11 @@ let
   configType = types.submodule {
     options = ({
       name = mkOption { type = types.str; };
+      after = mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+        description = "This configuration has to be executed after given configurations.";
+      };
       modulePath = mkOption {
         type = types.nullOr types.str;
         default = null;
@@ -107,7 +112,7 @@ in
 {
   options = {
     configs = mkOption {
-      type = types.listOf configType;
+      type = types.attrsOf configType;
       description = "NVim configurations";
     };
     treesitter.grammars = mkOption {
@@ -138,45 +143,53 @@ in
     };
   };
 
-  config = {
-    out =
-      let
-        vim2str = vim: if builtins.isPath vim then "source ${vim}" else vim;
-        lspconfigWrapper = "lspconfigWrapper";
+  config =
+    let
+      configs = (toposort
+        (a: b: elem a.name b.after)
+        (map
+          (name: config.configs.${name} // { inherit name; })
+          (attrNames config.configs))).result;
+    in
+    {
+      out =
+        let
+          vim2str = vim: if builtins.isPath vim then "source ${vim}" else vim;
+          lspconfigWrapper = "lspconfigWrapper";
 
-        lspUsed = any (c: c.lspconfig != null) config.configs;
+          lspUsed = any (c: c.lspconfig != null) configs;
 
-        configToLua = c:
-          [ "-- ${c.name} (${concatStringsSep " " (map (p: p.name) c.plugins)})" ]
-          ++ (map (k: toLuaFn "vim.api.nvim_set_var" [ k c.vars.${k} ]) (attrNames c.vars))
-          ++ (map (m: toLuaFn "vim.api.nvim_set_keymap" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
-          ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (attrNames c.opts))
-          ++ c.lua
-          ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
-          ++ (optional (c.setup != null)
-            (toLuaFn "require'${if c.modulePath != null then c.modulePath else c.name}'.setup" [ c.setup ]))
-          ++ (map
-            (l: toLuaFn "vim.treesitter.require_language" [ "${l}" "${config.treesitter.grammars."tree-sitter-${l}"}/parser" ])
-            c.treesitter.languages)
-          ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]))
-        ;
+          configToLua = c:
+            [ "-- ${c.name} (${concatStringsSep " " (map (p: p.name) c.plugins)})" ]
+            ++ (map (k: toLuaFn "vim.api.nvim_set_var" [ k c.vars.${k} ]) (attrNames c.vars))
+            ++ (map (m: toLuaFn "vim.api.nvim_set_keymap" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
+            ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (attrNames c.opts))
+            ++ c.lua
+            ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
+            ++ (optional (c.setup != null)
+              (toLuaFn "require'${if c.modulePath != null then c.modulePath else c.name}'.setup" [ c.setup ]))
+            ++ (map
+              (l: toLuaFn "vim.treesitter.require_language" [ "${l}" "${config.treesitter.grammars."tree-sitter-${l}"}/parser" ])
+              c.treesitter.languages)
+            ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]))
+          ;
 
-        init_lua =
-          config.beforePlugins.lua
-          ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
-          ++ (flatten (map configToLua config.configs))
-        ;
-      in
-      pkgs.vimUtils.vimrcContent {
-        customRC = "source ${pkgs.writeText "init.lua" (concatStringsSep "\n" init_lua)}";
-        beforePlugins = concatStringsSep "\n" (map vim2str config.beforePlugins.vim);
-        packages.nix-nvimconfig.start = foldl'
-          (a: b: a ++ b.plugins)
-          (optional lspUsed config.lspconfig)
-          config.configs;
-      };
-    opt = foldl' (a: b: a // b.opts) { } config.configs;
-    var = foldl' (a: b: a // b.vars) { } config.configs;
-    config = foldl' (a: b: a // { ${b.name} = b; }) { } config.configs;
-  };
+          init_lua =
+            config.beforePlugins.lua
+            ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
+            ++ (flatten (map configToLua configs))
+          ;
+        in
+        pkgs.vimUtils.vimrcContent {
+          customRC = "source ${pkgs.writeText "init.lua" (concatStringsSep "\n" init_lua)}";
+          beforePlugins = concatStringsSep "\n" (map vim2str config.beforePlugins.vim);
+          packages.nix-nvimconfig.start = foldl'
+            (a: b: a ++ b.plugins)
+            (optional lspUsed config.lspconfig)
+            configs;
+        };
+      opt = foldl' (a: b: a // b.opts) { } configs;
+      var = foldl' (a: b: a // b.vars) { } configs;
+      config = foldl' (a: b: a // { ${b.name} = b; }) { } configs;
+    };
 }
