@@ -1,6 +1,8 @@
 { config, lib, pkgs, ... }:
 let
-  keymapType = with lib; types.submodule {
+  inherit (lib) types mkOption luaExpr;
+
+  keymapType = types.submodule {
     options = {
       mode = mkOption { type = types.str; };
       lhs = mkOption { type = types.str; };
@@ -9,20 +11,20 @@ let
     };
   };
 
-  expressions = with lib; {
+  expressions = {
     lua = mkOption {
       type = types.listOf types.str;
       default = [ ];
       description = "Lua expressions to execute";
     };
     vim = mkOption {
-      type = with types; listOf (either str path);
+      type = types.listOf (types.either types.str types.path);
       default = [ ];
       description = "Vim expressions or files to execute";
     };
   };
 
-  configType = with lib; types.submodule {
+  configType = types.submodule {
     options = ({
       name = mkOption { type = types.str; };
       after = mkOption {
@@ -71,7 +73,7 @@ let
     // expressions);
   };
 
-  lspconfigType = with lib; types.submodule {
+  lspconfigType = types.submodule {
     options = {
       servers = mkOption {
         type = types.attrsOf (types.submodule {
@@ -107,7 +109,7 @@ let
   };
 in
 {
-  options = with lib; {
+  options = {
     configs = mkOption {
       type = types.attrsOf configType;
       description = "NVim configurations";
