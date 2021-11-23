@@ -144,11 +144,17 @@ in
     let
       inherit (lib) optional toposort toLuaFn toLua;
 
-      configs = (toposort
-        (a: b: builtins.elem a.name b.after)
-        (map
-          (name: config.configs.${name} // { inherit name; })
-          (builtins.attrNames config.configs))).result;
+      configs =
+        let
+          res = toposort
+            (a: b: builtins.elem a.name b.after)
+            (map
+              (name: config.configs.${name} // { inherit name; })
+              (builtins.attrNames config.configs));
+        in
+        if res ? result
+        then res.result
+        else throw "Config has a cyclic dependency";
     in
     {
       out =
