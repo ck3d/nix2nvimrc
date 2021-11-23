@@ -1,9 +1,6 @@
 { config, lib, pkgs, ... }:
-
-with lib;
-
 let
-  keymapType = types.submodule {
+  keymapType = with lib; types.submodule {
     options = {
       mode = mkOption { type = types.str; };
       lhs = mkOption { type = types.str; };
@@ -12,7 +9,7 @@ let
     };
   };
 
-  expressions = {
+  expressions = with lib; {
     lua = mkOption {
       type = types.listOf types.str;
       default = [ ];
@@ -25,7 +22,7 @@ let
     };
   };
 
-  configType = types.submodule {
+  configType = with lib; types.submodule {
     options = ({
       name = mkOption { type = types.str; };
       after = mkOption {
@@ -74,7 +71,7 @@ let
     // expressions);
   };
 
-  lspconfigType = types.submodule {
+  lspconfigType = with lib; types.submodule {
     options = {
       servers = mkOption {
         type = types.attrsOf (types.submodule {
@@ -110,7 +107,7 @@ let
   };
 in
 {
-  options = {
+  options = with lib; {
     configs = mkOption {
       type = types.attrsOf configType;
       description = "NVim configurations";
@@ -145,11 +142,13 @@ in
 
   config =
     let
+      inherit (lib) optional toposort toLuaFn toLua;
+
       configs = (toposort
-        (a: b: elem a.name b.after)
+        (a: b: builtins.elem a.name b.after)
         (map
           (name: config.configs.${name} // { inherit name; })
-          (attrNames config.configs))).result;
+          (builtins.attrNames config.configs))).result;
     in
     {
       out =
@@ -157,13 +156,13 @@ in
           vim2str = vim: if builtins.isPath vim then "source ${vim}" else vim;
           lspconfigWrapper = "lspconfigWrapper";
 
-          lspUsed = any (c: c.lspconfig != null) configs;
+          lspUsed = builtins.any (c: c.lspconfig != null) configs;
 
           configToLua = c:
-            [ "-- ${c.name} (${concatStringsSep " " (map (p: p.name) c.plugins)})" ]
-            ++ (map (k: toLuaFn "vim.api.nvim_set_var" [ k c.vars.${k} ]) (attrNames c.vars))
+            [ "-- ${c.name} (${builtins.concatStringsSep " " (map (p: p.name) c.plugins)})" ]
+            ++ (map (k: toLuaFn "vim.api.nvim_set_var" [ k c.vars.${k} ]) (builtins.attrNames c.vars))
             ++ (map (m: toLuaFn "vim.api.nvim_set_keymap" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
-            ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (attrNames c.opts))
+            ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (builtins.attrNames c.opts))
             ++ c.lua
             ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
             ++ (optional (c.setup != null)
@@ -177,19 +176,19 @@ in
           init_lua =
             config.beforePlugins.lua
             ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
-            ++ (flatten (map configToLua configs))
+            ++ builtins.concatMap configToLua configs
           ;
         in
         pkgs.vimUtils.vimrcContent {
-          customRC = "source ${pkgs.writeText "init.lua" (concatStringsSep "\n" init_lua)}";
-          beforePlugins = concatStringsSep "\n" (map vim2str config.beforePlugins.vim);
-          packages.nix-nvimconfig.start = foldl'
+          customRC = "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}";
+          beforePlugins = builtins.concatStringsSep "\n" (map vim2str config.beforePlugins.vim);
+          packages.nix-nvimconfig.start = builtins.foldl'
             (a: b: a ++ b.plugins)
             (optional lspUsed config.lspconfig)
             configs;
         };
-      opt = foldl' (a: b: a // b.opts) { } configs;
-      var = foldl' (a: b: a // b.vars) { } configs;
-      config = foldl' (a: b: a // { ${b.name} = b; }) { } configs;
+      opt = builtins.foldl' (a: b: a // b.opts) { } configs;
+      var = builtins.foldl' (a: b: a // b.vars) { } configs;
+      config = builtins.foldl' (a: b: a // { ${b.name} = b; }) { } configs;
     };
 }
