@@ -1,6 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, nix2nvimrc, ... }:
 let
-  inherit (lib) types mkOption luaExpr;
+  inherit (lib) types mkOption;
 
   keymapType = types.submodule {
     options = {
@@ -90,7 +90,7 @@ let
       };
       capabilities = mkOption {
         type = types.either types.attrs types.path;
-        default = luaExpr "vim.lsp.protocol.make_client_capabilities()";
+        default = nix2nvimrc.luaExpr "vim.lsp.protocol.make_client_capabilities()";
       };
       keymaps = mkOption {
         type = types.listOf keymapType;
@@ -103,7 +103,7 @@ let
       };
       on_attach = mkOption {
         type = types.either types.attrs types.path;
-        default = luaExpr "function(client, bufnr) end";
+        default = nix2nvimrc.luaExpr "function(client, bufnr) end";
       };
     };
   };
@@ -144,7 +144,8 @@ in
 
   config =
     let
-      inherit (lib) optional toposort toLuaFn toLua;
+      inherit (lib) optional toposort;
+      inherit (nix2nvimrc) toLuaFn toLua;
 
       configs =
         let

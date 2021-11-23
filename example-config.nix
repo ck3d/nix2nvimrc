@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, nix2nvimrc, ... }:
 {
   imports = [
     { configs.lang-nix.treesitter.languages = [ "nix" ]; }
@@ -12,7 +12,7 @@
     telescope = {
       plugins = with pkgs.vimPlugins; [ telescope-nvim plenary-nvim popup-nvim ];
       setup = { };
-      keymaps = map (lib.toKeymap { noremap = true; silent = true; }) [
+      keymaps = map (nix2nvimrc.toKeymap { noremap = true; silent = true; }) [
         [ "n" "<space>ff" "<Cmd>Telescope find_files<CR>" { } ]
       ];
     };

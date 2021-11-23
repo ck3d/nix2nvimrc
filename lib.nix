@@ -29,12 +29,14 @@ let
   toKeymap = def_opts: builtins.foldl' (f: f)
     (mode: lhs: rhs: opts: { inherit mode lhs rhs; opts = def_opts // opts; });
 
-  moduleLib = { inherit luaExpr toLua toLuaFn toKeymap; };
+  nix2nvimrc = { inherit luaExpr toLua toLuaFn toKeymap; };
 in
-moduleLib // {
+nix2nvimrc // {
   toRc = pkgs: config: (pkgs.lib.evalModules {
-    specialArgs.lib = pkgs.lib.extend (final: prev: moduleLib);
-    args.pkgs = pkgs;
-    modules = [ ./module.nix config ];
+    modules = [
+      { _module.args = { inherit pkgs nix2nvimrc; }; }
+      ./module.nix
+      config
+    ];
   }).config.out;
 }
