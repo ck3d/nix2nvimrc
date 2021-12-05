@@ -26,7 +26,6 @@ let
 
   configType = types.submodule {
     options = ({
-      name = mkOption { type = types.str; };
       after = mkOption {
         type = types.listOf types.str;
         default = [ ];
