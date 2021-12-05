@@ -197,6 +197,6 @@ in
         };
       opt = builtins.foldl' (a: b: a // b.opts) { } configs;
       var = builtins.foldl' (a: b: a // b.vars) { } configs;
-      config = builtins.foldl' (a: b: a // { ${b.name} = b; }) { } configs;
+      config = config.configs;
     };
 }
