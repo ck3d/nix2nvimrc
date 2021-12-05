@@ -24,6 +24,25 @@ let
     };
   };
 
+  luaFunctionCallType = name: types.submodule {
+    options = {
+      modulePath = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Module path used to function";
+      };
+      function = mkOption {
+        type = types.str;
+        default = name;
+      };
+      args = mkOption {
+        type = types.anything;
+        default = { };
+        description = "Argument passed to function";
+      };
+    };
+  };
+
   configType = types.submodule {
     options = ({
       after = mkOption {
@@ -31,15 +50,10 @@ let
         default = [ ];
         description = "This configuration has to be executed after given configurations.";
       };
-      modulePath = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "Module path used to call setup";
-      };
       setup = mkOption {
-        type = types.anything;
+        type = types.nullOr (luaFunctionCallType "setup");
         default = null;
-        description = "Argument passed to setup";
+        description = "Lua plugin setup";
       };
       plugins = mkOption {
         type = types.listOf types.package;
@@ -174,7 +188,7 @@ in
             ++ c.lua
             ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
             ++ (optional (c.setup != null)
-              (toLuaFn "require'${if c.modulePath != null then c.modulePath else c.name}'.setup" [ c.setup ]))
+              (toLuaFn "require'${if c.setup.modulePath != null then c.setup.modulePath else c.name}'.${c.setup.function}" [ c.setup.args ]))
             ++ (map
               (l: toLuaFn "vim.treesitter.require_language" [ "${l}" "${config.treesitter.grammars."tree-sitter-${l}"}/parser" ])
               c.treesitter.languages)

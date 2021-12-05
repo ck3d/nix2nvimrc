@@ -6,12 +6,12 @@
   configs = {
     treesitter = {
       plugins = [ pkgs.vimPlugins.nvim-treesitter ];
-      modulePath = "nvim-treesitter.configs";
-      setup.highlight.enable = true;
+      setup.modulePath = "nvim-treesitter.configs";
+      setup.args.highlight.enable = true;
     };
     telescope = {
       plugins = with pkgs.vimPlugins; [ telescope-nvim plenary-nvim popup-nvim ];
-      setup = { };
+      setup.args = { };
       keymaps = map (nix2nvimrc.toKeymap { noremap = true; silent = true; }) [
         [ "n" "<space>ff" "<Cmd>Telescope find_files<CR>" { } ]
       ];
