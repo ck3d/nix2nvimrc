@@ -20,6 +20,8 @@ return function(cfg)
     end
     if lsp.pkg ~= nil then
       if config.cmd == nil then
+        -- TODO: check if following PR may changed the interface:
+        -- https://github.com/neovim/nvim-lspconfig/pull/1479
         config.cmd = require'lspconfig'[name].document_config.default_config.cmd
       end
       config.cmd[1] = lsp.pkg .. '/bin/' .. config.cmd[1]
