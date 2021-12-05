@@ -17,7 +17,7 @@ let
         val.expression
       else
         "{"
-        + (concatStringsSep "," (map (k: k + "=" + (toLua val.${k})) (attrNames val)))
+        + (concatStringsSep "," (map (k: "[${toLua k}]=" + (toLua val.${k})) (attrNames val)))
         + "}"
     else if isList val then
       "{"
