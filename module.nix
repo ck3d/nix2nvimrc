@@ -189,10 +189,10 @@ in
             ++ (map (k: toLuaFn "vim.api.nvim_set_var" [ k c.vars.${k} ]) (builtins.attrNames c.vars))
             ++ (map (m: toLuaFn "vim.api.nvim_set_keymap" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
             ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (builtins.attrNames c.opts))
-            ++ c.lua
-            ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
             ++ (optional (c.setup != null)
               (toLuaFn "require'${if c.setup.modulePath != null then c.setup.modulePath else c.name}'.${c.setup.function}" [ c.setup.args ]))
+            ++ c.lua
+            ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
             ++ (map
               (l: toLuaFn "vim.treesitter.require_language" [ "${l}" "${config.treesitter.grammars."tree-sitter-${l}"}/parser" ])
               c.treesitter.languages)
