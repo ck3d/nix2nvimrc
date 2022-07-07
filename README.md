@@ -5,17 +5,17 @@ from a given module configuration.
 
 The module provides options to configure following items:
 
-| Neovim configuration item | Nix2NVimRC module option |
-|---|---|
-| Neovim [option](https://neovim.io/doc/user/options.html) | `opts{}` |
-| Neovim keymap (see also helper function `toKeymap`)| `keymaps[]` |
-| Neovim global variable | `vars{}` |
-| Neovim [treesitter](https://neovim.io/doc/user/treesitter.html) | `treesitter.languages[]` |
-| Neovim [LSP](https://neovim.io/doc/user/lsp.html) via plugin [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) | `lspconfig.` |
-| Lua plugin setup | `setup.` |
-| Vim expression or file | `vim[]` |
-| Lua expression | `lua[]` |
-| Vim plugin as Nix package | `plugins[]` |
+| Neovim configuration item | Nix2NVimRC module option | used Neovim Lua API |
+|---|---|---|
+| Neovim [option](https://neovim.io/doc/user/options.html) | `opts{}` | `vim.opt[]`|
+| Neovim keymap (see also helper function `toKeymap`)| `keymaps[]` | `vim.api.nvim_set_keymap()`|
+| Neovim global variable | `vars{}` | `vim.api.nvim_set_var()` |
+| Neovim [treesitter](https://neovim.io/doc/user/treesitter.html) | `treesitter.languages[]` | `vim.treesitter.require_language()` |
+| Neovim [LSP](https://neovim.io/doc/user/lsp.html) via plugin [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) | `lspconfig.` | passed to [nix-lspconfig.lua](./nix-lspconfig.lua) |
+| Lua plugin setup | `setup.` |`require('...').setup()`|
+| Vim expression or file | `vim[]` | `vim.cmd()` |
+| Lua expression or file | `lua[]` | inlined |
+| Vim plugin as Nix package | `plugins[]` | handled by `nixpkgs.vimUtils.vimrcContent` |
 
 ## Example
 
@@ -32,8 +32,9 @@ To see a more sophisticated example, go to repository [ck3d-nvim-configs](https:
 ## Design Goals
 
 1. Do not wrap Neovim, just generate a configuration file for it.
-2. Minimize dependency to `nixpkgs`, only following library functions are used:
-   `optional`, `evalModules`, `types`, `mkOption`, and `toposort`
+2. Minimize dependency to `nixpkgs`, following functions are used:
+   - `lib.`: `optional`, `evalModules`, `types`, `mkOption`, and `toposort`
+   - `pkgs.`: `vimUtils.vimrcContent` 
 3. The Nix flake has no inputs and therefor no lock file.
 
 ## Alternative Projects
