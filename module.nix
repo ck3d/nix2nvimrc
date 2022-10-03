@@ -44,7 +44,7 @@ let
   };
 
   configType = types.submodule {
-    options = ({
+    options = {
       after = mkOption {
         type = types.listOf types.str;
         default = [ ];
@@ -83,7 +83,7 @@ let
         default = null;
       };
     }
-    // expressions);
+    // expressions;
   };
 
   lspconfigType = types.submodule {
@@ -172,9 +172,7 @@ in
               (name: config.configs.${name} // { inherit name; })
               (builtins.attrNames config.configs));
         in
-        if res ? result
-        then res.result
-        else throw "Config has a cyclic dependency";
+          res.result or (throw "Config has a cyclic dependency");
     in
     {
       out =
