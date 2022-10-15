@@ -202,15 +202,18 @@ in
             ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
             ++ builtins.concatMap configToLua configs
           ;
-        in
-        pkgs.vimUtils.vimrcContent {
-          customRC = "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}";
-          beforePlugins = builtins.concatStringsSep "\n" (map vim2str config.beforePlugins.vim);
+
           packages.nix-nvimconfig.start = builtins.foldl'
             (a: b: a ++ b.plugins)
             (optional lspUsed config.lspconfig)
             configs;
-        };
+        in
+        builtins.concatStringsSep "\n"
+          ((map vim2str config.beforePlugins.vim) ++ [
+            "set packpath^=${pkgs.vimUtils.packDir packages}"
+            "set runtimepath^=${pkgs.vimUtils.packDir packages}"
+            "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}"
+          ]);
       opt = builtins.foldl' (a: b: a // b.opts) { } configs;
       var = builtins.foldl' (a: b: a // b.vars) { } configs;
       config = config.configs;

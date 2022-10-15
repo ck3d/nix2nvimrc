@@ -34,7 +34,7 @@ To see a more sophisticated example, go to repository [ck3d-nvim-configs](https:
 1. Do not wrap Neovim, just generate a configuration file for it.
 2. Minimize dependency to `nixpkgs`, following functions are used:
    - `lib.`: `optional`, `evalModules`, `types`, `mkOption`, and `toposort`
-   - `pkgs.`: `vimUtils.vimrcContent` 
+   - `pkgs.`: `vimUtils.packDir`, `writeText`
 3. The Nix flake has no inputs and therefor no lock file.
 
 ## Alternative Projects
