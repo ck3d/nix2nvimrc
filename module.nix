@@ -74,9 +74,10 @@ let
         type = types.listOf keymapType;
         default = [ ];
       };
-      treesitter.languages = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
+      treesitter.parsers = mkOption {
+        type = types.attrsOf types.path;
+        default = { };
+        description = "Attribute set where name is the language and the the value a path to the parser.";
       };
       lspconfig = mkOption {
         type = types.nullOr lspconfigType;
@@ -130,10 +131,6 @@ in
     configs = mkOption {
       type = types.attrsOf configType;
       description = "NVim configurations";
-    };
-    treesitter.grammars = mkOption {
-      type = types.attrsOf types.package;
-      default = pkgs.tree-sitter.builtGrammars;
     };
     lspconfig = mkOption {
       type = types.package;
@@ -191,9 +188,8 @@ in
               (toLuaFn "require'${if c.setup.modulePath != null then c.setup.modulePath else c.name}'.${c.setup.function}" [ c.setup.args ]))
             ++ c.lua
             ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
-            ++ (map
-              (l: toLuaFn "vim.treesitter.require_language" [ "${l}" "${config.treesitter.grammars."tree-sitter-${l}"}/parser" ])
-              c.treesitter.languages)
+            ++ (map (l: toLuaFn "vim.treesitter.require_language" [ l c.treesitter.parsers.${l} ])
+              (builtins.attrNames c.treesitter.parsers))
             ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]))
           ;
 

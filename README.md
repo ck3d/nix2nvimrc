@@ -10,7 +10,7 @@ The module provides options to configure following items:
 | Neovim [option](https://neovim.io/doc/user/options.html) | `opts{}` | `vim.opt[]`|
 | Neovim keymap (see also helper function `toKeymap`)| `keymaps[]` | `vim.api.nvim_set_keymap()`|
 | Neovim global variable | `vars{}` | `vim.api.nvim_set_var()` |
-| Neovim [treesitter](https://neovim.io/doc/user/treesitter.html) | `treesitter.languages[]` | `vim.treesitter.require_language()` |
+| Neovim [treesitter](https://neovim.io/doc/user/treesitter.html) | `treesitter.parsers{}` | `vim.treesitter.require_language()` |
 | Neovim [LSP](https://neovim.io/doc/user/lsp.html) via plugin [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) | `lspconfig.` | passed to [nix-lspconfig.lua](./nix-lspconfig.lua) |
 | Lua plugin setup | `setup.` |`require('...').setup()`|
 | Vim expression or file | `vim[]` | `vim.cmd()` |
