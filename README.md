@@ -7,15 +7,15 @@ The module provides options to configure following items:
 
 | Neovim configuration item | Nix2NVimRC module option | used Neovim Lua API |
 |---|---|---|
-| Neovim [option](https://neovim.io/doc/user/options.html) | `opts{}` | `vim.opt[]`|
+| Neovim [option](https://neovim.io/doc/user/options.html) | `opts.<name> = <value>` | `vim.opt['<name>'] = <value>`|
 | Neovim keymap (see also helper function `toKeymap`)| `keymaps[]` | `vim.api.nvim_set_keymap()`|
-| Neovim global variable | `vars{}` | `vim.api.nvim_set_var()` |
-| Neovim [treesitter](https://neovim.io/doc/user/treesitter.html) | `treesitter.parsers{}` | `vim.treesitter.require_language()` |
+| Neovim global variable | `vars.<name> = <value>` | `vim.api.nvim_set_var(<name>, <value>)` |
+| Neovim [treesitter](https://neovim.io/doc/user/treesitter.html) | `treesitter.parsers.<name> = <path>` | `vim.treesitter.require_language(<name>, <path>)` |
 | Neovim [LSP](https://neovim.io/doc/user/lsp.html) via plugin [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) | `lspconfig.` | passed to [nix-lspconfig.lua](./nix-lspconfig.lua) |
 | Lua plugin setup | `setup.` |`require('...').setup()`|
 | Vim expression or file | `vim[]` | `vim.cmd()` |
 | Lua expression or file | `lua[]` | inlined |
-| Vim plugin as Nix package | `plugins[]` | handled by `nixpkgs.vimUtils.vimrcContent` |
+| Vim plugin as Nix package | `plugins[]` | handled by `nixpkgs.vimUtils.packDir` |
 
 ## Example
 
