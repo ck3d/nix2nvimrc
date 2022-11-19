@@ -2,11 +2,18 @@
 let
   inherit (lib) types mkOption;
 
+  exprType = types.submodule {
+    options = {
+      type = mkOption { type = types.enum [ "lua" ]; };
+      expression = mkOption { type = types.str; };
+    };
+  };
+
   keymapType = types.submodule {
     options = {
       mode = mkOption { type = types.str; };
       lhs = mkOption { type = types.str; };
-      rhs = mkOption { type = types.str; };
+      rhs = mkOption { type = types.either types.str exprType; };
       opts = mkOption { type = types.attrs; };
     };
   };
@@ -182,7 +189,7 @@ in
           configToLua = c:
             [ "-- ${c.name} (${builtins.concatStringsSep " " (map (p: p.name) c.plugins)})" ]
             ++ (map (k: toLuaFn "vim.api.nvim_set_var" [ k c.vars.${k} ]) (builtins.attrNames c.vars))
-            ++ (map (m: toLuaFn "vim.api.nvim_set_keymap" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
+            ++ (map (m: toLuaFn "vim.keymap.set" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
             ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (builtins.attrNames c.opts))
             ++ (optional (c.setup != null)
               (toLuaFn "require'${if c.setup.modulePath != null then c.setup.modulePath else c.name}'.${c.setup.function}" [ c.setup.args ]))

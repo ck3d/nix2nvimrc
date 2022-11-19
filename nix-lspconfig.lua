@@ -3,8 +3,8 @@ return function(cfg)
     local config = {
       on_attach = function(client, bufnr)
         for _, keymap in ipairs(cfg.keymaps) do
-          vim.api.nvim_buf_set_keymap(bufnr, keymap.mode, keymap.lhs,
-                                      keymap.rhs, keymap.opts)
+          vim.keymap.set(keymap.mode, keymap.lhs, keymap.rhs,
+                         vim.tbl_extend('force', keymap.opts, {buffer = bufnr}))
         end
 
         for option, value in pairs(cfg.opts) do

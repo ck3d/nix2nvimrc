@@ -19,8 +19,9 @@ in
     telescope = {
       plugins = with pkgs.vimPlugins; [ telescope-nvim plenary-nvim popup-nvim ];
       setup.args = { };
-      keymaps = map (nix2nvimrc.toKeymap { noremap = true; silent = true; }) [
+      keymaps = map (nix2nvimrc.toKeymap { silent = true; }) [
         [ "n" "<space>ff" "<Cmd>Telescope find_files<CR>" { } ]
+        [ "n" "<space>fg" (nix2nvimrc.luaExpr "require'telescope.builtin'.live_grep") { } ]
       ];
     };
     lsp = {
