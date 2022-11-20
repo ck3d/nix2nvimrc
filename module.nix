@@ -143,7 +143,6 @@ in
       type = types.package;
       default = pkgs.vimPlugins.nvim-lspconfig;
     };
-    beforePlugins = expressions;
 
     out = mkOption {
       internal = true;
@@ -201,8 +200,7 @@ in
           ;
 
           init_lua =
-            config.beforePlugins.lua
-            ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
+            optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
             ++ builtins.concatMap configToLua configs
           ;
 
@@ -212,11 +210,11 @@ in
             configs;
         in
         builtins.concatStringsSep "\n"
-          ((map vim2str config.beforePlugins.vim) ++ [
+          [
             "set packpath^=${pkgs.vimUtils.packDir packages}"
             "set runtimepath^=${pkgs.vimUtils.packDir packages}"
             "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}"
-          ]);
+          ];
       opt = builtins.foldl' (a: b: a // b.opts) { } configs;
       var = builtins.foldl' (a: b: a // b.vars) { } configs;
       config = config.configs;
