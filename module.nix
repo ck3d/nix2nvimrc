@@ -139,10 +139,6 @@ in
       type = types.attrsOf configType;
       description = "NVim configurations";
     };
-    lspconfig = mkOption {
-      type = types.package;
-      default = pkgs.vimPlugins.nvim-lspconfig;
-    };
 
     out = mkOption {
       internal = true;
@@ -210,8 +206,7 @@ in
           ;
 
           packages.nix-nvimconfig.start = builtins.foldl'
-            (a: b: a ++ b.plugins)
-            (optional lspUsed config.lspconfig)
+            (a: b: a ++ b.plugins) [ ]
             configs;
         in
         "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}";

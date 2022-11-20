@@ -24,8 +24,9 @@ in
         [ "n" "<space>fg" (nix2nvimrc.luaExpr "require'telescope.builtin'.live_grep") { } ]
       ];
     };
-    lsp = {
+    lspconfig = {
       after = [ "telescope" ];
+      plugins = [ pkgs.vimPlugins.nvim-lspconfig ];
       lspconfig.servers = lib.optionalAttrs
         (config.config ? "lang-nix")
         { rnix.pkg = pkgs.rnix-lsp; };
