@@ -210,7 +210,7 @@ in
             (a: b: a ++ b.plugins) [ ]
             configs;
         in
-        "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}";
+        builtins.concatStringsSep "\n" init_lua;
 
       opt = builtins.foldl' (a: b: a // b.opts) { } configs;
       var = builtins.foldl' (a: b: a // b.vars) { } configs;

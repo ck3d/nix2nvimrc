@@ -23,19 +23,19 @@ The file `./example-config.nix` contains a minimalistic example configuration.
 To generate and use this configuration, execute following steps:
 
 ```sh
-nix-build -E 'with import <nixpkgs> { }; writeText "nvimrc" ((import ./lib.nix).toRc pkgs ./example-config.nix)'
-nvim -u ./result
+nix-build -E 'with import <nixpkgs> { }; writeText "init.lua" ((import ./lib.nix).toRc pkgs ./example-config.nix)'
+nvim -u NORC --cmd "luafile ./result"
 ```
 
 To see a more sophisticated example, go to repository [ck3d-nvim-configs](https://github.com/ck3d/ck3d-nvim-configs).
 
 ## Design Goals
 
-1. Do not wrap Neovim, just generate a configuration file for it.
-2. Minimize dependency to `nixpkgs`, following functions are used:
-   - `lib.`: `optional`, `evalModules`, `types`, `mkOption`, and `toposort`
-   - `pkgs.`: `vimUtils.packDir`, `writeText`
-3. The Nix flake has no inputs and therefor no lock file.
+1. Output only Lua code for NVim
+2. Keep dependency to `nixpkgs` as small as possible:
+   - `lib.`: `optional`, `optionals`, `evalModules`, `types`, `mkOption`, and `toposort`
+   - `pkgs.`: `vimUtils.packDir`
+3. No dependency in the Nix Flake to avoid a lock file
 
 ## Alternative Projects
 
