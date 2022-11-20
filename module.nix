@@ -164,7 +164,7 @@ in
 
   config =
     let
-      inherit (lib) optional toposort;
+      inherit (lib) optional optionals toposort;
       inherit (nix2nvimrc) toLuaFn toLua;
 
       configs =
@@ -200,7 +200,12 @@ in
           ;
 
           init_lua =
-            optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
+            optionals (packages != [ ])
+              [
+                "vim.opt.packpath:append('${pkgs.vimUtils.packDir packages}')"
+                "vim.opt.runtimepath:append('${pkgs.vimUtils.packDir packages}')"
+              ]
+            ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
             ++ builtins.concatMap configToLua configs
           ;
 
@@ -209,12 +214,8 @@ in
             (optional lspUsed config.lspconfig)
             configs;
         in
-        builtins.concatStringsSep "\n"
-          [
-            "set packpath^=${pkgs.vimUtils.packDir packages}"
-            "set runtimepath^=${pkgs.vimUtils.packDir packages}"
-            "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}"
-          ];
+        "source ${pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" init_lua)}";
+
       opt = builtins.foldl' (a: b: a // b.opts) { } configs;
       var = builtins.foldl' (a: b: a // b.vars) { } configs;
       config = config.configs;
