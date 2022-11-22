@@ -11,7 +11,7 @@ let
 
   keymapType = types.submodule {
     options = {
-      mode = mkOption { type = types.str; };
+      mode = mkOption { type = types.either types.str (types.listOf types.str); };
       lhs = mkOption { type = types.str; };
       rhs = mkOption { type = types.either types.str exprType; };
       opts = mkOption { type = types.attrs; };
