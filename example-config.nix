@@ -2,8 +2,6 @@
 let
   parsers = lib.mapAttrs'
     (n: v: lib.nameValuePair
-      # remove prefix "tree-sitter-" from attribute names
-      # https://github.com/NixOS/nixpkgs/pull/198606
       (lib.removePrefix "tree-sitter-" n)
       "${v}/parser")
     pkgs.tree-sitter.builtGrammars;
