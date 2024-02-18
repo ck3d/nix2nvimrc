@@ -23,7 +23,7 @@ The file `./example-config.nix` contains a minimalistic example configuration.
 To generate and use this configuration, execute following steps:
 
 ```sh
-nix-build -E 'with import <nixpkgs> { }; writeText "init.lua" ((import ./lib.nix).toRc pkgs ./example-config.nix)'
+nix-build -I "$NIX_PATH" -E 'with import <nixpkgs> { }; writeText "init.lua" ((import ./lib.nix).toRc pkgs ./example-config.nix)'
 nvim -u NORC --cmd "luafile ./result"
 ```
 
