@@ -39,4 +39,5 @@ To see a more sophisticated example, go to repository [ck3d-nvim-configs](https:
 
 ## Alternative Projects
 
+- [nixvim](https://github.com/nix-community/nixvim)
 - [nix2vim](https://github.com/gytis-ivaskevicius/nix2vim)
