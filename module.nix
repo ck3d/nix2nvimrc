@@ -52,6 +52,11 @@ let
 
   configType = types.submodule {
     options = {
+      disable = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Disable configuration";
+      };
       after = mkOption {
         type = types.listOf types.str;
         default = [ ];
@@ -169,7 +174,9 @@ in
             (a: b: builtins.elem a.name b.after)
             (map
               (name: config.configs.${name} // { inherit name; })
-              (builtins.attrNames config.configs));
+              (builtins.filter
+                (name: !config.configs.${name}.disable)
+                (builtins.attrNames config.configs)));
         in
           res.result or (throw "Config has a cyclic dependency");
     in

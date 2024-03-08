@@ -31,5 +31,7 @@ in
         { rnix.pkg = pkgs.rnix-lsp; };
       vim = [ ./test/init.vim ];
     };
+    empty_notused.disable = true;
+    empty_used = { };
   };
 }
