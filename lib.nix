@@ -34,7 +34,7 @@ in
 nix2nvimrc // {
   toRc = pkgs: config: (pkgs.lib.evalModules {
     modules = [
-      { _module.args = { inherit pkgs nix2nvimrc; }; }
+      { _module.args = { inherit pkgs; }; }
       ./module.nix
       config
     ];

@@ -222,5 +222,7 @@ in
       opt = builtins.foldl' (a: b: a // b.opts) { } configs;
       var = builtins.foldl' (a: b: a // b.vars) { } configs;
       config = config.configs;
+
+      _module.args.nix2nvimrc = import ./lib.nix;
     };
 }
