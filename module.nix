@@ -106,6 +106,7 @@ let
           options = {
             pkg = mkOption {
               type = types.nullOr types.package;
+              default = null;
               description = ''
                 Package to use to patch lspconfig cmd.
                 Set to null if server has no cmd (e.g. for plugin null-ls).
