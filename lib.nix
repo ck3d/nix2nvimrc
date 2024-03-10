@@ -1,8 +1,4 @@
 let
-  luaExpr = lua: { type = "lua"; expression = lua; };
-
-  toLuaFn = fn: args: "${fn}(${builtins.concatStringsSep "," (map toLua args)})";
-
   toLua = with builtins; val:
     if val == null then
       "nil"
@@ -26,17 +22,21 @@ let
     else
       throw "type convertion is not implemented";
 
+  modules = pkgs: [
+    { _module.args = { inherit pkgs; }; }
+    ./module.nix
+  ];
+in
+{
+  inherit toLua modules;
+
+  luaExpr = lua: { type = "lua"; expression = lua; };
+
+  toLuaFn = fn: args: "${fn}(${builtins.concatStringsSep "," (map toLua args)})";
+
   toKeymap = def_opts: builtins.foldl' (f: f)
     (mode: lhs: rhs: opts: { inherit mode lhs rhs; opts = def_opts // opts; });
 
-  nix2nvimrc = { inherit luaExpr toLua toLuaFn toKeymap; };
-in
-nix2nvimrc // {
-  toRc = pkgs: config: (pkgs.lib.evalModules {
-    modules = [
-      { _module.args = { inherit pkgs; }; }
-      ./module.nix
-      config
-    ];
-  }).config.out;
+  toRc = pkgs: config:
+    (pkgs.lib.evalModules { modules = (modules pkgs) ++ [ config ]; }).config.out;
 }
