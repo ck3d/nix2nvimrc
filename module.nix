@@ -210,7 +210,11 @@ in
               "vim.opt.runtimepath:append('${pkgs.vimUtils.packDir packages}')"
             ]
             ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
-            ++ builtins.concatMap configToLua configs
+            ++ builtins.concatMap
+            (c:
+              let lua = configToLua c; in
+              if builtins.length lua <= 1 then builtins.trace "Warning: configuration '${c.name}' has no configuration" [ ] else lua)
+            configs
             ++ [ "-- vim: set filetype=lua:" ]
           ;
 
