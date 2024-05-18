@@ -30,5 +30,6 @@ in
       vim = [ ./test/init.vim ];
     };
     empty = { };
+    plugin_only.plugins = [ pkgs.vimPlugins.vim-speeddating ];
   };
 }

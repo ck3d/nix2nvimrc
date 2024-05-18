@@ -206,7 +206,7 @@ in
             ++ builtins.concatMap
             (c:
               let lua = configToLua c; in
-              if builtins.length lua <= 1 then builtins.trace "Warning: configuration '${c.name}' has no configuration" [ ] else lua)
+              if builtins.length lua <= 1 && c.plugins == [ ] then builtins.trace "Warning: configuration '${c.name}' has no configuration" [ ] else lua)
             configs
             ++ [ "-- vim: set filetype=lua:" ]
           ;
