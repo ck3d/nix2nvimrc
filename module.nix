@@ -52,11 +52,6 @@ let
 
   configType = types.submodule {
     options = {
-      disable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Disable configuration";
-      };
       after = mkOption {
         type = types.listOf types.str;
         default = [ ];
@@ -146,6 +141,12 @@ in
       description = "NVim configurations";
     };
 
+    enableFn = mkOption {
+      type = types.functionTo types.bool;
+      default = _: true;
+      description = "Enable module function";
+    };
+
     out = mkOption {
       internal = true;
       type = types.str;
@@ -176,7 +177,7 @@ in
             (map
               (name: config.configs.${name} // { inherit name; })
               (builtins.filter
-                (name: !config.configs.${name}.disable)
+                (name: config.enableFn config.configs.${name})
                 (builtins.attrNames config.configs)));
         in
           res.result or (throw "Config has a cyclic dependency");
