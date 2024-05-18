@@ -99,14 +99,6 @@ let
       servers = mkOption {
         type = types.attrsOf (types.submodule {
           options = {
-            pkg = mkOption {
-              type = types.nullOr types.package;
-              default = null;
-              description = ''
-                Package to use to patch lspconfig cmd.
-                Set to null if server has no cmd (e.g. for plugin null-ls).
-              '';
-            };
             config = mkOption {
               type = types.attrs;
               default = { };

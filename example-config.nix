@@ -1,4 +1,4 @@
-{ pkgs, config, lib, nix2nvimrc, ... }:
+{ pkgs, lib, nix2nvimrc, ... }:
 let
   parsers = lib.mapAttrs'
     (n: v: lib.nameValuePair
@@ -26,9 +26,7 @@ in
     lspconfig = {
       after = [ "telescope" ];
       plugins = [ pkgs.vimPlugins.nvim-lspconfig ];
-      lspconfig.servers = lib.optionalAttrs
-        (config.config ? "lang-nix")
-        { rnix.pkg = pkgs.rnix-lsp; };
+      lspconfig.servers.nixd.config.cmd = [ "${pkgs.nixd}/bin/nixd" ];
       vim = [ ./test/init.vim ];
     };
     empty = { };

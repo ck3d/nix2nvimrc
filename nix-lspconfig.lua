@@ -18,14 +18,6 @@ return function(cfg)
     if lsp.config ~= nil then
       config = vim.tbl_extend('force', config, lsp.config)
     end
-    if lsp.pkg ~= nil then
-      if config.cmd == nil then
-        -- TODO: check if following PR may changed the interface:
-        -- https://github.com/neovim/nvim-lspconfig/pull/1479
-        config.cmd = require'lspconfig'[name].document_config.default_config.cmd
-      end
-      config.cmd[1] = lsp.pkg .. '/bin/' .. config.cmd[1]
-    end
     require'lspconfig'[name].setup(config)
   end
 end
