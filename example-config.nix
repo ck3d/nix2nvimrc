@@ -9,14 +9,12 @@ in
 {
   configs = {
     treesitter = {
-      enable = true;
       treesitter.parsers = { inherit (parsers) nix; };
       plugins = [ pkgs.vimPlugins.nvim-treesitter ];
       setup.modulePath = "nvim-treesitter.configs";
       setup.args.highlight.enable = true;
     };
     telescope = {
-      enable = true;
       plugins = with pkgs.vimPlugins; [ telescope-nvim plenary-nvim popup-nvim ];
       setup.args = { };
       keymaps = map (nix2nvimrc.toKeymap { silent = true; }) [
@@ -26,7 +24,6 @@ in
       ];
     };
     lspconfig = {
-      enable = true;
       after = [ "telescope" ];
       plugins = [ pkgs.vimPlugins.nvim-lspconfig ];
       lspconfig.servers = lib.optionalAttrs
@@ -34,7 +31,6 @@ in
         { rnix.pkg = pkgs.rnix-lsp; };
       vim = [ ./test/init.vim ];
     };
-    empty_notused = { };
-    empty_used.enable = true;
+    empty = { };
   };
 }

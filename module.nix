@@ -52,11 +52,6 @@ let
 
   configType = types.submodule {
     options = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Enable configuration module";
-      };
       after = mkOption {
         type = types.listOf types.str;
         default = [ ];
@@ -148,7 +143,7 @@ in
 
     enableFn = mkOption {
       type = types.functionTo types.bool;
-      default = m: m.enable;
+      default = _: true;
       description = "Enable module function";
     };
 
