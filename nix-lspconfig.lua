@@ -8,6 +8,7 @@ return function(cfg)
         end
 
         for option, value in pairs(cfg.opts) do
+          -- TODO: https://neovim.io/doc/user/deprecated.html#nvim_buf_set_option()
           vim.api.nvim_buf_set_option(bufnr, option, value)
         end
 
