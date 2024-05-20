@@ -133,10 +133,10 @@ in
       description = "NVim configurations";
     };
 
-    enableFn = mkOption {
-      type = types.functionTo types.bool;
-      default = _: true;
-      description = "Enable module function";
+    enableFns = mkOption {
+      type = types.listOf (types.functionTo types.bool);
+      default = [ ];
+      description = "Enable functions for a configuration module";
     };
 
     out = mkOption {
@@ -169,7 +169,7 @@ in
             (map
               (name: config.configs.${name} // { inherit name; })
               (builtins.filter
-                (name: config.enableFn config.configs.${name})
+                (name: builtins.foldl' (last: enableFn: last && (enableFn config.configs.${name})) true config.enableFns)
                 (builtins.attrNames config.configs)));
         in
           res.result or (throw "Config has a cyclic dependency");
