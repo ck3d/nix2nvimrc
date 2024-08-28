@@ -1,4 +1,10 @@
-{ config, lib, pkgs, nix2nvimrc, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  nix2nvimrc,
+  ...
+}:
 let
   inherit (lib) types mkOption;
 
@@ -31,24 +37,26 @@ let
     };
   };
 
-  luaFunctionCallType = name: types.submodule {
-    options = {
-      modulePath = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "Module path used to function";
-      };
-      function = mkOption {
-        type = types.str;
-        default = name;
-      };
-      args = mkOption {
-        type = types.anything;
-        default = { };
-        description = "Argument passed to function";
+  luaFunctionCallType =
+    name:
+    types.submodule {
+      options = {
+        modulePath = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "Module path used to function";
+        };
+        function = mkOption {
+          type = types.str;
+          default = name;
+        };
+        args = mkOption {
+          type = types.anything;
+          default = { };
+          description = "Argument passed to function";
+        };
       };
     };
-  };
 
   configType = types.submodule {
     options = {
@@ -90,21 +98,22 @@ let
         type = types.nullOr lspconfigType;
         default = null;
       };
-    }
-    // expressions;
+    } // expressions;
   };
 
   lspconfigType = types.submodule {
     options = {
       servers = mkOption {
-        type = types.attrsOf (types.submodule {
-          options = {
-            config = mkOption {
-              type = types.attrs;
-              default = { };
+        type = types.attrsOf (
+          types.submodule {
+            options = {
+              config = mkOption {
+                type = types.attrs;
+                default = { };
+              };
             };
-          };
-        });
+          }
+        );
       };
       capabilities = mkOption {
         type = types.either types.attrs types.path;
@@ -164,15 +173,16 @@ in
 
       configs =
         let
-          res = toposort
-            (a: b: builtins.elem a.name b.after)
-            (map
-              (name: config.configs.${name} // { inherit name; })
-              (builtins.filter
-                (name: builtins.foldl' (last: enableFn: last && (enableFn config.configs.${name})) true config.enableFns)
-                (builtins.attrNames config.configs)));
+          res = toposort (a: b: builtins.elem a.name b.after) (
+            map (name: config.configs.${name} // { inherit name; }) (
+              builtins.filter (
+                name:
+                builtins.foldl' (last: enableFn: last && (enableFn config.configs.${name})) true config.enableFns
+              ) (builtins.attrNames config.configs)
+            )
+          );
         in
-          res.result or (throw "Config has a cyclic dependency");
+        res.result or (throw "Config has a cyclic dependency");
     in
     {
       out =
@@ -182,38 +192,62 @@ in
 
           lspUsed = builtins.any (c: c.lspconfig != null) configs;
 
-          configToLua = c:
+          configToLua =
+            c:
             [ "-- ${c.name} (${builtins.concatStringsSep " " (map (p: p.name) c.plugins)})" ]
-            ++ (map (k: toLuaFn "vim.api.nvim_set_var" [ k c.vars.${k} ]) (builtins.attrNames c.vars))
-            ++ (map (m: toLuaFn "vim.keymap.set" [ m.mode m.lhs m.rhs m.opts ]) c.keymaps)
+            ++ (map (
+              k:
+              toLuaFn "vim.api.nvim_set_var" [
+                k
+                c.vars.${k}
+              ]
+            ) (builtins.attrNames c.vars))
+            ++ (map (
+              m:
+              toLuaFn "vim.keymap.set" [
+                m.mode
+                m.lhs
+                m.rhs
+                m.opts
+              ]
+            ) c.keymaps)
             ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (builtins.attrNames c.opts))
-            ++ (optional (c.setup != null)
-              (toLuaFn "require'${if c.setup.modulePath != null then c.setup.modulePath else c.name}'.${c.setup.function}" [ c.setup.args ]))
+            ++ (optional (c.setup != null) (
+              toLuaFn "require'${
+                if c.setup.modulePath != null then c.setup.modulePath else c.name
+              }'.${c.setup.function}" [ c.setup.args ]
+            ))
             ++ c.lua
             ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
-            ++ (map (l: toLuaFn "vim.treesitter.language.add" [ l { path = c.treesitter.parsers.${l}; } ])
-              (builtins.attrNames c.treesitter.parsers))
-            ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]))
-          ;
+            ++ (map (
+              l:
+              toLuaFn "vim.treesitter.language.add" [
+                l
+                { path = c.treesitter.parsers.${l}; }
+              ]
+            ) (builtins.attrNames c.treesitter.parsers))
+            ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]));
 
-          init_lua = [ "-- generated by nix2nvimrc" ]
-            ++ optionals (packages != [ ])
-            [
+          init_lua =
+            [ "-- generated by nix2nvimrc" ]
+            ++ optionals (packages != [ ]) [
               "vim.opt.packpath:append('${pkgs.vimUtils.packDir packages}')"
               "vim.opt.runtimepath:append('${pkgs.vimUtils.packDir packages}')"
             ]
             ++ optional lspUsed "local ${lspconfigWrapper} = ${toLua ./nix-lspconfig.lua}"
-            ++ builtins.concatMap
-            (c:
-              let lua = configToLua c; in
-              if builtins.length lua <= 1 && c.plugins == [ ] then builtins.trace "Warning: configuration '${c.name}' has no configuration" [ ] else lua)
-            configs
-            ++ [ "-- vim: set filetype=lua:" ]
-          ;
+            ++ builtins.concatMap (
+              c:
+              let
+                lua = configToLua c;
+              in
+              if builtins.length lua <= 1 && c.plugins == [ ] then
+                builtins.trace "Warning: configuration '${c.name}' has no configuration" [ ]
+              else
+                lua
+            ) configs
+            ++ [ "-- vim: set filetype=lua:" ];
 
-          packages.nix-nvimconfig.start = builtins.foldl'
-            (a: b: a ++ b.plugins) [ ]
-            configs;
+          packages.nix-nvimconfig.start = builtins.foldl' (a: b: a ++ b.plugins) [ ] configs;
         in
         builtins.concatStringsSep "\n" init_lua;
 
