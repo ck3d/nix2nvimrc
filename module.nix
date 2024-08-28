@@ -191,7 +191,7 @@ in
               (toLuaFn "require'${if c.setup.modulePath != null then c.setup.modulePath else c.name}'.${c.setup.function}" [ c.setup.args ]))
             ++ c.lua
             ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
-            ++ (map (l: toLuaFn "vim.treesitter.language.require_language" [ l c.treesitter.parsers.${l} ])
+            ++ (map (l: toLuaFn "vim.treesitter.language.add" [ l { path = c.treesitter.parsers.${l}; } ])
               (builtins.attrNames c.treesitter.parsers))
             ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]))
           ;
