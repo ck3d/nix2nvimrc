@@ -4,7 +4,7 @@ return function(cfg)
       on_attach = function(client, bufnr)
         for _, keymap in ipairs(cfg.keymaps) do
           vim.keymap.set(keymap.mode, keymap.lhs, keymap.rhs,
-                         vim.tbl_extend('force', keymap.opts, {buffer = bufnr}))
+            vim.tbl_extend('force', keymap.opts, { buffer = bufnr }))
         end
 
         for option, value in pairs(cfg.opts) do
@@ -19,6 +19,6 @@ return function(cfg)
     if lsp.config ~= nil then
       config = vim.tbl_extend('force', config, lsp.config)
     end
-    require'lspconfig'[name].setup(config)
+    require 'lspconfig'[name].setup(config)
   end
 end
