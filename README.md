@@ -15,7 +15,7 @@ The module provides options to configure following items:
 | Lua plugin setup | `setup.` |`require('...').setup()`|
 | Vim expression or file | `vim[]` | `vim.cmd()` |
 | Lua expression or file | `lua[]` | inlined |
-| Vim plugin as Nix package | `plugins[]` | handled by `nixpkgs.vimUtils.packDir` |
+| Vim plugin as Nix package | `plugins[]` | handled similar to `nixpkgs.vimUtils.packDir` |
 
 ## Example
 
@@ -34,7 +34,7 @@ To see a more sophisticated example, go to repository [ck3d-nvim-configs](https:
 1. Output only Lua code for NVim
 2. Keep dependency to `nixpkgs` as small as possible:
    - `lib.`: `optional`, `optionals`, `evalModules`, `types`, `mkOption`, and `toposort`
-   - `pkgs.`: `vimUtils.packDir`
+   - `pkgs.`: `linkfarm`
 3. No dependency in the Nix Flake to avoid a lock file
 
 ## Alternative Projects
