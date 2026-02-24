@@ -18,6 +18,10 @@ in
       plugins = [ pkgs.vimPlugins.nvim-treesitter ];
       setup.modulePath = "nvim-treesitter.configs";
       setup.args.highlight.enable = true;
+      lua = [
+        ""
+        ./test/init.lua
+      ];
     };
     telescope = {
       plugins = with pkgs.vimPlugins; [
