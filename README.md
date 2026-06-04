@@ -33,7 +33,7 @@ To see a more sophisticated example, go to repository [ck3d-nvim-configs](https:
 
 1. Output only Lua code for NVim
 2. Keep dependency to `nixpkgs` as small as possible:
-   - `lib.`: `optional`, `optionals`, `evalModules`, `types`, `mkOption`, and `toposort`
+   - `lib.`: `optional`, `optionals`, `evalModules`, `types`, `mkOption`, `mapAttrsToList`, and `toposort`
    - `pkgs.`: `linkfarm`
 3. No dependency in the Nix Flake to avoid a lock file
 

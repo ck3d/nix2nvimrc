@@ -39,14 +39,12 @@ in
 
   toLuaFn = fn: args: "${fn}(${builtins.concatStringsSep "," (map toLua args)})";
 
-  toKeymap =
-    def_opts:
-    builtins.foldl' (f: f) (
-      mode: lhs: rhs: opts: {
-        inherit mode lhs rhs;
-        opts = def_opts // opts;
-      }
-    );
+  toKeymap = def_opts: args: {
+    mode = builtins.elemAt args 0;
+    lhs = builtins.elemAt args 1;
+    rhs = builtins.elemAt args 2;
+    opts = def_opts // builtins.elemAt args 3;
+  };
 
   toRc = pkgs: config: (pkgs.lib.evalModules { modules = (modules pkgs) ++ [ config ]; }).config.out;
 }

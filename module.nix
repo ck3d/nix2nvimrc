@@ -12,13 +12,12 @@ let
   # https://github.com/NixOS/nixpkgs/blob/63aa55f6f54c1ebd9fdf5746bdbe39fe229c74ff/pkgs/applications/editors/vim/plugins/vim-utils.nix#L171
   vimFarm =
     prefix: name: drvs:
-    let
-      mkEntryFromDrv = drv: {
+    pkgs.linkFarm name (
+      map (drv: {
         name = "${prefix}/${lib.getName drv}";
         path = drv;
-      };
-    in
-    pkgs.linkFarm name (map mkEntryFromDrv drvs);
+      }) drvs
+    );
 
   exprType = types.submodule {
     options = {
@@ -190,18 +189,15 @@ in
 
       configs =
         let
-          res = toposort (a: b: builtins.elem a.name b.after) (
-            map (name: config.configs.${name} // { inherit name; }) (
-              builtins.filter (
-                name:
-                builtins.foldl' (last: enableFn: last && (enableFn config.configs.${name})) true config.enableFns
-              ) (builtins.attrNames config.configs)
-            )
-          );
+          enabledConfigs = lib.filterAttrs (
+            name: cfg: builtins.all (f: f cfg) config.enableFns
+          ) config.configs;
+          listConfigs = lib.mapAttrsToList (name: cfg: cfg // { inherit name; }) enabledConfigs;
+          res = toposort (a: b: builtins.elem a.name b.after) listConfigs;
         in
         res.result or (throw "Config has a cyclic dependency");
 
-      packages = builtins.foldl' (a: b: a ++ b.plugins) [ ] configs;
+      packages = builtins.concatMap (c: c.plugins) configs;
 
       packdirFolder = "pack/nix-nvimconfig/start";
     in
@@ -218,13 +214,13 @@ in
           configToLua =
             c:
             [ "-- ${c.name} (${builtins.concatStringsSep " " (map (p: p.name) c.plugins)})" ]
-            ++ (map (
-              k:
+            ++ lib.mapAttrsToList (
+              k: v:
               toLuaFn "vim.api.nvim_set_var" [
                 k
-                c.vars.${k}
+                v
               ]
-            ) (builtins.attrNames c.vars))
+            ) c.vars
             ++ (map (
               m:
               toLuaFn "vim.keymap.set" [
@@ -234,21 +230,21 @@ in
                 m.opts
               ]
             ) c.keymaps)
-            ++ (map (k: "vim.opt[${toLua k}] = ${toLua c.opts.${k}}") (builtins.attrNames c.opts))
+            ++ lib.mapAttrsToList (k: v: "vim.opt[${toLua k}] = ${toLua v}") c.opts
             ++ (optional (c.setup != null) (
               toLuaFn "require'${
                 if c.setup.modulePath != null then c.setup.modulePath else c.name
               }'.${c.setup.function}" [ c.setup.args ]
             ))
             ++ (map (lua: if builtins.isPath lua then builtins.readFile lua else lua) c.lua)
-            ++ (map (v: toLuaFn "vim.cmd" [ v ]) (map vim2str c.vim))
-            ++ (map (
-              l:
+            ++ (map (v: toLuaFn "vim.cmd" [ (vim2str v) ]) c.vim)
+            ++ lib.mapAttrsToList (
+              l: path:
               toLuaFn "vim.treesitter.language.add" [
                 l
-                { path = c.treesitter.parsers.${l}; }
+                { inherit path; }
               ]
-            ) (builtins.attrNames c.treesitter.parsers))
+            ) c.treesitter.parsers
             ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]));
 
           init_lua = [
