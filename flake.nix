@@ -3,6 +3,6 @@
   outputs =
     { self }:
     {
-      lib = import ./lib.nix;
+      lib = import ./.;
     };
 }

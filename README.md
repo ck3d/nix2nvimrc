@@ -23,7 +23,7 @@ The file `./example-config.nix` contains a minimalistic example configuration.
 To generate and use this configuration, execute following steps:
 
 ```sh
-nix-build -E 'with import <nixpkgs> { }; writeText "init.lua" ((import ./lib.nix).toRc pkgs ./example-config.nix)'
+nix-build -E 'with import <nixpkgs> { }; writeText "init.lua" ((import ./.).toRc pkgs ./example-config.nix)'
 nvim -u NORC --cmd "luafile ./result"
 ```
 
@@ -35,7 +35,7 @@ To see a more sophisticated example, go to repository [ck3d-nvim-configs](https:
 2. Keep dependency to `nixpkgs` as small as possible:
    - `lib.`: `optional`, `optionals`, `evalModules`, `types`, `mkOption`, `mapAttrsToList`, and `toposort`
    - `pkgs.`: `linkfarm`
-3. No dependency in the Nix Flake to avoid a lock file
+3. No Nix Flake
 
 ## Alternative Projects
 
