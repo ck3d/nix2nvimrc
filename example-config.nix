@@ -4,17 +4,9 @@
   nix2nvimrc,
   ...
 }:
-let
-  parsers = lib.mapAttrs' (
-    n: v: lib.nameValuePair (lib.removePrefix "tree-sitter-" n) "${v}/parser"
-  ) pkgs.tree-sitter.builtGrammars;
-in
 {
   configs = {
     treesitter = {
-      treesitter.parsers = {
-        inherit (parsers) nix;
-      };
       plugins = [ pkgs.vimPlugins.nvim-treesitter ];
       setup.modulePath = "nvim-treesitter.configs";
       setup.args.highlight.enable = true;

@@ -100,11 +100,7 @@ let
         type = types.listOf keymapType;
         default = [ ];
       };
-      treesitter.parsers = mkOption {
-        type = types.attrsOf types.path;
-        default = { };
-        description = "Attribute set where name is the language and the the value a path to the parser.";
-      };
+
       lspconfig = mkOption {
         type = types.nullOr lspconfigType;
         default = null;
@@ -238,13 +234,6 @@ in
             ))
             ++ (map (lua: if builtins.isPath lua then builtins.readFile lua else lua) c.lua)
             ++ (map (v: toLuaFn "vim.cmd" [ (vim2str v) ]) c.vim)
-            ++ lib.mapAttrsToList (
-              l: path:
-              toLuaFn "vim.treesitter.language.add" [
-                l
-                { inherit path; }
-              ]
-            ) c.treesitter.parsers
             ++ (optional (c.lspconfig != null) (toLuaFn lspconfigWrapper [ c.lspconfig ]));
 
           init_lua = [
